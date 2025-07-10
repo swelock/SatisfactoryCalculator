@@ -187,7 +187,7 @@ satisfactory-calculator/
 - **Issues:** [GitHub Issues](https://github.com/satisfactory-calculator/satisfactory-calculator/issues)
 - **Discussions:** [GitHub Discussions](https://github.com/satisfactory-calculator/satisfactory-calculator/discussions)
 - **Discord:** [Сообщество Satisfactory](https://discord.gg/satisfactory)
-- **Сайт:** [Наш Сайт](https://swelock.github.io/SatisfactoryCalculatorSite/)
+- **Сайт:** [Наш Сайт](https://swelock.github.io/SatisCalculatorSite/)
 ---
 
 <div align="center">
