@@ -1,7 +1,7 @@
 # Satisfactory Calculator 🏭
 
 [![Build Status](https://github.com/satisfactory-calculator/satisfactory-calculator/workflows/CI/badge.svg)](https://github.com/satisfactory-calculator/satisfactory-calculator/actions)
-[![Release](https://img.shields.io/github/v/release/satisfactory-calculator/satisfactory-calculator)]([https://github.com/satisfactory-calculator/satisfactory-calculator/releases](https://github.com/swelock/SatisfactoryCalculator/tree/release?tab=readme-ov-file))
+[![Release](https://img.shields.io/github/v/release/satisfactory-calculator/satisfactory-calculator)](https://github.com/swelock/SatisfactoryCalculator/tree/release)
 [![License](https://img.shields.io/github/license/satisfactory-calculator/satisfactory-calculator)](LICENSE)
 [![Qt](https://img.shields.io/badge/Qt-6.0+-green.svg)](https://www.qt.io/)
 [![C++](https://img.shields.io/badge/C++-17-blue.svg)](https://isocpp.org/)
