@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/github/license/satisfactory-calculator/satisfactory-calculator)](LICENSE)
 [![Qt](https://img.shields.io/badge/Qt-6.0+-green.svg)](https://www.qt.io/)
 [![C++](https://img.shields.io/badge/C++-17-blue.svg)](https://isocpp.org/)
-[![Наш Сайт](https://swelock.github.io/SatisfactoryCalculatorSite/)]
+
 Продвинутый калькулятор производственных цепочек для игры Satisfactory с красивым интерфейсом и мощными возможностями расчета.
 
 ![Screenshot](docs/images/screenshot.png)
@@ -187,7 +187,7 @@ satisfactory-calculator/
 - **Issues:** [GitHub Issues](https://github.com/satisfactory-calculator/satisfactory-calculator/issues)
 - **Discussions:** [GitHub Discussions](https://github.com/satisfactory-calculator/satisfactory-calculator/discussions)
 - **Discord:** [Сообщество Satisfactory](https://discord.gg/satisfactory)
-
+- **Сайт:** [Наш Сайт](https://swelock.github.io/SatisfactoryCalculatorSite/)
 ---
 
 <div align="center">
