@@ -1,41 +1,126 @@
-# Prerequisites
-*.d
+# Build directories
+build/
+build-*/
+bin/
+lib/
+debug/
+release/
+out/
 
-# Compiled Object files
-*.slo
-*.lo
+# qmake generated files  
+Makefile
+Makefile.Debug
+Makefile.Release
+
+# Qt generated files
+*.pro.user
+*.pro.user.*
+ui_*.h
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+*_automoc.cpp
+*.qm
+.qmake.stash
+
+# Compiler outputs
 *.o
 *.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Linker files
-*.ilk
-
-# Debugger Files
-*.pdb
-
-# Compiled Dynamic libraries
 *.so
-*.dylib
 *.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
+*.dylib
 *.a
 *.lib
-
-# Executables
 *.exe
-*.out
 *.app
 
-# debug information files
-*.dwo
+# IDE files
+.vscode/
+.idea/
+*.vcxproj*
+*.sln
+*.suo
+*.user
+*.ncb
+*.aps
+*.pdb
+*.ilk
+*.meta
+*.tlog
+*.idb
+*.lastbuildstate
+
+# Qt Creator
+CMakeLists.txt.user
+CMakeLists.txt.user.*
+*.autosave
+
+# Visual Studio
+.vs/
+*.VC.db
+*.VC.VC.opendb
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.bak
+*~
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Package managers
+conan.lock
+vcpkg_installed/
+
+# Documentation generated
+docs/html/
+docs/latex/
+docs/xml/
+
+# Test outputs
+Testing/
+*.gcov
+*.gcda
+*.gcno
+coverage.info
+coverage/
+
+# Profiling
+*.prof
+callgrind.out.*
+massif.out.*
+
+# Static analysis
+cppcheck-report.xml
+*.sarif
+
+# Packaging
+*.deb
+*.rpm
+*.tar.gz
+*.zip
+*.dmg
+*.msi
+
+# Custom temporary files
+math_check.cpp
+math_check.exe
+
+# Localization
+*.ts
+!*.en.ts
+
+# Performance data
+benchmark.json
+perf.data* 

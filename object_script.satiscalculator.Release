@@ -1,0 +1,10 @@
+release/main.o
+release/mainwindow.o
+release/game_data.o
+release/game_data_ext.o
+release/complete_alternates.o
+release/calculator_engine.o
+release/recipe_manager.o
+release/moc_mainwindow.o
+release/moc_calculator_engine.o
+release/moc_recipe_manager.o
