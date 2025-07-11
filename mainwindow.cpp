@@ -15,6 +15,11 @@
 #include <QRegularExpression>
 #include <QToolTip>
 #include <QDebug>
+#include <QTreeWidget>
+#include <QSplitter>
+#include <QTreeWidgetItem>
+#include <QBrush>
+#include <QHeaderView>
 
 // Helper function implementation
 GameRecipe selectBestRecipe(const QList<GameRecipe>& recipes)
@@ -233,8 +238,23 @@ void MainWindow::setupUi()
     m_liftInputsScrollArea->setWidget(m_liftCustomInputsWidget);
     liftLayout->addWidget(m_liftInputsScrollArea);
     
-    liftLayout->addWidget(m_liftResultOutput);
+    m_treeWidgetResults = new QTreeWidget();
+    m_treeWidgetResults->setColumnCount(3);
+    m_treeWidgetResults->setHeaderLabels({"Компонент", "Кол-во/мин", "Здания"});
+    m_treeWidgetResults->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    m_treeWidgetResults->setStyleSheet(
+        "QTreeWidget {background: #313244; color: #cdd6f4; border: 1px solid #45475a; border-radius: 8px;}"
+        "QTreeWidget::item {padding: 4px 2px;}"
+        "QTreeWidget::item:selected {background: #45475a; color: #89b4fa;}"
+    );
 
+    QSplitter *liftSplitter = new QSplitter(Qt::Horizontal);
+    liftSplitter->addWidget(m_treeWidgetResults);
+    liftSplitter->addWidget(m_liftResultOutput);
+    liftSplitter->setStretchFactor(0, 1);
+    liftSplitter->setStretchFactor(1, 1);
+    liftLayout->addWidget(liftSplitter);
+    
     // Hub Tab
     m_hubTab = new QWidget();
     QVBoxLayout *hubLayout = new QVBoxLayout(m_hubTab);
@@ -307,6 +327,22 @@ void MainWindow::setupUi()
     
     hubLayout->addWidget(m_hubResultOutput);
 
+    // === HUB TAB: после создания m_hubResultOutput и перед hubLayout->addWidget(m_hubResultOutput) ===
+    m_treeWidgetHubResults = new QTreeWidget();
+    m_treeWidgetHubResults->setColumnCount(3);
+    m_treeWidgetHubResults->setHeaderLabels({"Компонент", "Кол-во/мин", "Здания"});
+    m_treeWidgetHubResults->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    m_treeWidgetHubResults->setStyleSheet(m_treeWidgetResults->styleSheet());
+
+    QSplitter *hubSplitter = new QSplitter(Qt::Horizontal);
+    hubSplitter->addWidget(m_treeWidgetHubResults);
+    hubSplitter->addWidget(m_hubResultOutput);
+    hubSplitter->setStretchFactor(0,1);
+    hubSplitter->setStretchFactor(1,1);
+
+    hubLayout->addWidget(hubSplitter);
+    // удалить прежнее hubLayout->addWidget(m_hubResultOutput);
+
     // Custom Tab
     m_customTab = new QWidget();
     QVBoxLayout *customLayout = new QVBoxLayout(m_customTab);
@@ -362,6 +398,22 @@ void MainWindow::setupUi()
     customInputLayout->addWidget(m_calculateCustomButton);
     customLayout->addLayout(customInputLayout);
     customLayout->addWidget(m_customResultOutput);
+
+    // === CUSTOM TAB: после создания m_customResultOutput и перед customLayout->addWidget(m_customResultOutput) ===
+    m_treeWidgetCustomResults = new QTreeWidget();
+    m_treeWidgetCustomResults->setColumnCount(3);
+    m_treeWidgetCustomResults->setHeaderLabels({"Компонент", "Кол-во/мин", "Здания"});
+    m_treeWidgetCustomResults->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    m_treeWidgetCustomResults->setStyleSheet(m_treeWidgetResults->styleSheet());
+
+    QSplitter *customSplitter = new QSplitter(Qt::Horizontal);
+    customSplitter->addWidget(m_treeWidgetCustomResults);
+    customSplitter->addWidget(m_customResultOutput);
+    customSplitter->setStretchFactor(0,1);
+    customSplitter->setStretchFactor(1,1);
+
+    customLayout->addWidget(customSplitter);
+    // удалить прежнее customLayout->addWidget(m_customResultOutput);
 
     // Alternate Recipes Tab
     setupAlternateRecipesTab();
@@ -1193,6 +1245,18 @@ void MainWindow::calculateLift()
         "<h3 style='color: #2ea043; margin-top: 0; font-size: 18px; font-weight: 600; margin-bottom: 16px;'>📋 Цели фазы:</h3>"
     ).arg(phase);
 
+    // Обновляем левое дерево
+    m_treeWidgetResults->clear();
+    for (const auto &req : requirements) {
+        double productionRate = qMax(1.0, req.amount / 60.0);
+        QTreeWidgetItem *root = new QTreeWidgetItem(m_treeWidgetResults);
+        root->setText(0, GameData::instance().getItemName(req.itemClass));
+        root->setText(1, QString::number(productionRate, 'f', 2));
+        root->setText(2, "Цель");
+        buildTree(req.itemClass, productionRate, root, 0);
+        root->setExpanded(true);
+    }
+
     // Для космического лифта считаем как производство единичных предметов
     for (const auto& req : requirements) {
         resultText += QString("<p style='margin: 5px 0; font-size: 14px;'>• <span style='color: #87CEEB;'>%1</span>: <span style='color: #FFD700; font-weight: bold;'>%2 шт.</span></p>")
@@ -1239,35 +1303,25 @@ void MainWindow::calculateLift()
     resultText += "</div>";
     resultText += "</div>";
     
-    resultText += "<div style='"
-    "background: linear-gradient(135deg, rgba(255, 123, 114, 0.1), rgba(22, 27, 34, 0.9)); "
-    "padding: 20px; "
-    "border-radius: 12px; "
-    "border: 2px solid rgba(255, 123, 114, 0.3); "
-    "box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);"
-    "'>";
-    resultText += "<h3 style='color: #ff7b72; margin-top: 0; font-size: 18px; font-weight: 600; margin-bottom: 16px;'>⛏️ Итого сырых ресурсов (в минуту):</h3>";
-    resultText += "<p style='color: rgba(240, 246, 252, 0.7); margin: 5px 0 15px 0; font-size: 12px;'>Потребление ресурсов в минуту для поддержания заданной скорости производства</p>";
+    QString summaryHtml = "<div style='background: linear-gradient(135deg, rgba(255, 123, 114, 0.1), rgba(22, 27, 34, 0.9)); padding: 20px; border-radius: 12px; border: 2px solid rgba(255, 123, 114, 0.3); box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);'>";
+    summaryHtml += "<h3 style='color: #ff7b72; margin-top: 0; font-size: 18px; font-weight: 600; margin-bottom: 16px;'>⛏️ Итого сырых ресурсов (в минуту):</h3>";
+    summaryHtml += "<p style='color: rgba(240, 246, 252, 0.7); margin: 5px 0 15px 0; font-size: 12px;'>Потребление ресурсов в минуту для поддержания заданной скорости производства</p>";
     for (auto it = totalRaw.constBegin(); it != totalRaw.constEnd(); ++it) {
-        resultText += QString(
-            "<div style='"
-            "margin: 8px 0; "
-            "padding: 12px 16px; "
-            "background: linear-gradient(90deg, rgba(255, 123, 114, 0.05), rgba(22, 27, 34, 0.3)); "
-            "border-left: 4px solid #ff7b72; "
-            "border-radius: 8px;"
-            "'>"
+        summaryHtml += QString(
+            "<div style='margin: 8px 0; padding: 12px 16px; background: linear-gradient(90deg, rgba(255, 123, 114, 0.05), rgba(22, 27, 34, 0.3)); border-left: 4px solid #ff7b72; border-radius: 8px;'>"
             "<span style='color: #58a6ff; font-weight: 600; font-size: 14px; margin-right: 8px;'>🔸</span>"
             "<span style='color: #f0f6fc; font-weight: 500;'>%1</span>"
             "<span style='color: rgba(240, 246, 252, 0.6); margin: 0 8px;'>:</span>"
             "<span style='color: #ffd700; font-weight: bold; font-size: 15px;'>%2/мин</span>"
-            "</div>"
-        ).arg(GameData::instance().getItemName(it.key()))
-         .arg(QString::number(it.value(), 'f', 2));
+            "</div>")
+            .arg(GameData::instance().getItemName(it.key()))
+            .arg(QString::number(it.value(), 'f', 2));
     }
-    resultText += "</div>";
+    summaryHtml += "</div>";
 
-    m_liftResultOutput->setHtml(resultText);
+    m_liftResultOutput->setHtml(summaryHtml);
+    // Skip displaying detailed steps
+    return; // end function early
 }
 
 void MainWindow::calculateHub()
@@ -1309,16 +1363,15 @@ void MainWindow::calculateHub()
         
         // Добавляем цель в расчеты
         m_tempCalculationSteps.append(QString(
-            "<div style='margin: 12px 0; padding: 12px; background: linear-gradient(90deg, rgba(255,152,0,0.2), rgba(255,152,0,0.05)); border-left: 4px solid #FF9800; border-radius: 6px;'>"
-            "<span style='color: #FF9800; font-weight: bold; font-size: 16px;'>🎯 ЦЕЛЬ:</span> "
-            "<span style='color: #87CEEB; font-weight: bold;'>%1</span> - "
-            "<span style='color: #FFD700; font-weight: bold;'>%2 шт.</span> "
-            "<span style='color: #FF9800;'>(%3/мин производство)</span><br/>"
-            "<span style='color: #a5d6a7; font-size: 13px;'>⏱️ Время производства: %4 мин (%5 ч)</span>"
+            "<div style='margin-bottom: 16px; padding: 16px; background: rgba(88, 166, 255, 0.1); border: 2px solid rgba(88, 166, 255, 0.2); border-radius: 12px;'>"
+            "<h3 style='color: #58a6ff; margin: 0; font-size: 16px; font-weight: 600;'>🎯 Цель: %1</h3>"
+            "<p style='color: rgba(240, 246, 252, 0.8); margin: 6px 0 0 0; font-size: 13px;'>Производство <b style='color: #ffd700;'>%2/мин</b>"
+            " | <span title='Требуется для лифта'>Фаза: %3 шт.</span>"
+            " | <span title='Общее время производства'>⏱️ %4 мин (%5 ч)</span></p>"
             "</div>"
         ).arg(GameData::instance().getItemName(req.itemClass))
-         .arg(req.amount)
          .arg(QString::number(productionRate, 'f', 2))
+         .arg(req.amount)
          .arg(QString::number(req.amount / productionRate, 'f', 1))
          .arg(QString::number((req.amount / productionRate) / 60.0, 'f', 2)));
         
@@ -1350,35 +1403,30 @@ void MainWindow::calculateHub()
     resultText += "</div>";
     resultText += "</div>";
     
-    resultText += "<div style='"
-    "background: linear-gradient(135deg, rgba(255, 123, 114, 0.1), rgba(22, 27, 34, 0.9)); "
-    "padding: 20px; "
-    "border-radius: 12px; "
-    "border: 2px solid rgba(255, 123, 114, 0.3); "
-    "box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);"
-    "'>";
-    resultText += "<h3 style='color: #ff7b72; margin-top: 0; font-size: 18px; font-weight: 600; margin-bottom: 16px;'>⛏️ Итого сырых ресурсов (в минуту):</h3>";
-    resultText += "<p style='color: rgba(240, 246, 252, 0.7); margin: 5px 0 15px 0; font-size: 12px;'>Потребление ресурсов в минуту для поддержания заданной скорости производства</p>";
+    // Формируем только сводку ресурсов
+    QString summaryHtml = "<div style='background: linear-gradient(135deg, rgba(255, 123, 114, 0.1), rgba(22, 27, 34, 0.9)); padding: 20px; border-radius: 12px; border: 2px solid rgba(255, 123, 114, 0.3); box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);'>";
+    summaryHtml += "<h3 style='color: #ff7b72; margin-top: 0; font-size: 18px; font-weight: 600; margin-bottom: 16px;'>⛏️ Итого сырых ресурсов:</h3>";
+    summaryHtml += "<p style='color: rgba(240, 246, 252, 0.7); margin: 5px 0 15px 0; font-size: 12px;'>Общее количество для производства всех требований улучшения</p>";
     for (auto it = totalRaw.constBegin(); it != totalRaw.constEnd(); ++it) {
-        resultText += QString(
-            "<div style='"
-            "margin: 8px 0; "
-            "padding: 12px 16px; "
-            "background: linear-gradient(90deg, rgba(255, 123, 114, 0.05), rgba(22, 27, 34, 0.3)); "
-            "border-left: 4px solid #ff7b72; "
-            "border-radius: 8px;"
-            "'>"
-            "<span style='color: #58a6ff; font-weight: 600; font-size: 14px; margin-right: 8px;'>🔸</span>"
-            "<span style='color: #f0f6fc; font-weight: 500;'>%1</span>"
-            "<span style='color: rgba(240, 246, 252, 0.6); margin: 0 8px;'>:</span>"
-            "<span style='color: #ffd700; font-weight: bold; font-size: 15px;'>%2/мин</span>"
-            "</div>"
-        ).arg(GameData::instance().getItemName(it.key()))
-         .arg(QString::number(it.value(), 'f', 2));
+        summaryHtml += QString("<div style='margin: 8px 0; padding: 12px 16px; background: linear-gradient(90deg, rgba(255, 123, 114, 0.05), rgba(22, 27, 34, 0.3)); border-left: 4px solid #ff7b72; border-radius: 8px;'><span style='color: #58a6ff; font-weight: 600; font-size: 14px; margin-right: 8px;'>🔸</span><span style='color: #f0f6fc; font-weight: 500;'>%1</span><span style='color: rgba(240, 246, 252, 0.6); margin: 0 8px;'>:</span><span style='color: #ffd700; font-weight: bold; font-size: 15px;'>%2 шт.</span></div>")
+                .arg(GameData::instance().getItemName(it.key()))
+                .arg(QString::number(it.value(), 'f', 0));
     }
-    resultText += "</div>";
+    summaryHtml += "</div>";
 
-    m_hubResultOutput->setHtml(resultText);
+    m_hubResultOutput->setHtml(summaryHtml);
+
+    // --- В calculateHub(), прямо перед строкой 'QString summaryHtml =' добавляю ---
+    m_treeWidgetHubResults->clear();
+    for (const auto &req : requirements) {
+        double productionRate = qMax(1.0, req.amount / 60.0);
+        QTreeWidgetItem *rootHub = new QTreeWidgetItem(m_treeWidgetHubResults);
+        rootHub->setText(0, GameData::instance().getItemName(req.itemClass));
+        rootHub->setText(1, QString::number(productionRate,'f',2));
+        rootHub->setText(2, "Цель");
+        buildTree(req.itemClass, productionRate, rootHub, 0);
+        rootHub->setExpanded(true);
+    }
 }
 
 void MainWindow::calculateCustom()
@@ -1440,7 +1488,26 @@ void MainWindow::calculateCustom()
     }
     resultText += "</div>";
 
-    m_customResultOutput->setHtml(resultText);
+    // Формируем только сводку ресурсов
+    QString summaryHtmlC = "<div style='background: linear-gradient(135deg, rgba(255, 123, 114, 0.1), rgba(22, 27, 34, 0.9)); padding: 20px; border-radius: 12px; border: 2px solid rgba(255, 123, 114, 0.3); box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);'>";
+    summaryHtmlC += "<h3 style='color: #ff7b72; margin-top: 0; font-size: 18px; font-weight: 600; margin-bottom: 16px;'>⛏️ Итого сырых ресурсов (в минуту):</h3>";
+    for (auto it = totalRaw.constBegin(); it != totalRaw.constEnd(); ++it) {
+        summaryHtmlC += QString("<div style='margin: 8px 0; padding: 12px 16px; background: linear-gradient(90deg, rgba(255, 123, 114, 0.05), rgba(22, 27, 34, 0.3)); border-left: 4px solid #ff7b72; border-radius: 8px;'><span style='color: #58a6ff; font-weight: 600; font-size: 14px; margin-right: 8px;'>🔸</span><span style='color: #f0f6fc; font-weight: 500;'>%1</span><span style='color: rgba(240, 246, 252, 0.6); margin: 0 8px;'>:</span><span style='color: #ffd700; font-weight: bold; font-size: 15px;'>%2/мин</span></div>")
+                .arg(GameData::instance().getItemName(it.key()))
+                .arg(QString::number(it.value(), 'f', 2));
+    }
+    summaryHtmlC += "</div>";
+
+    m_customResultOutput->setHtml(summaryHtmlC);
+
+    // --- В calculateCustom(), перед 'QString summaryHtmlC =' добавляю ---
+    m_treeWidgetCustomResults->clear();
+    QTreeWidgetItem *rootC = new QTreeWidgetItem(m_treeWidgetCustomResults);
+    rootC->setText(0, itemName);
+    rootC->setText(1, QString::number(amount,'f',2));
+    rootC->setText(2, "Цель");
+    buildTree(itemClass, amount, rootC, 0);
+    rootC->setExpanded(true);
 }
 
 void MainWindow::calculateRequirements(const QString& itemClass, double amountPerMinute, QMap<QString, double>& total, int depth)
@@ -1513,50 +1580,80 @@ void MainWindow::calculateRequirements(const QString& itemClass, double amountPe
         // Создаем красивые префиксы для дерева
         QString treePrefix;
         if (depth == 0) {
-            treePrefix = "<span style='color: #58a6ff; font-size: 16px;'>🎯</span> ";
+            treePrefix = "<span style='color: #58a6ff; font-size: 16px;'>🎯 </span>";
         } else {
-            QString connector = "├─";
-            if (depth > 1) {
-                connector = QString("│ ").repeated(depth - 1) + "├─";
+            QString connector;
+            for (int i = 0; i < depth; ++i) {
+                connector += "<span style='color: rgba(140, 140, 140, 0.4); font-family: monospace;'>│&nbsp;&nbsp;</span>";
             }
-            treePrefix = QString("<span style='color: %1; font-family: monospace; font-weight: bold;'>%2</span> ")
-                        .arg(levelColor).arg(connector);
+            connector += "<span style='color: %1; font-family: monospace; font-weight: bold;'>├─</span> ";
+            treePrefix = connector;
         }
         
         // Иконки для зданий
         QString buildingIcon = getBuildingIcon(recipe.building);
         
+        // --- НОВЫЙ БЛОК: Формируем список ингредиентов ---
+        QString ingredientsHtml;
+        if (!recipe.ingredients.isEmpty()) {
+            ingredientsHtml += "<details style='margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(88, 166, 255, 0.2);'>";
+            ingredientsHtml += "<summary style='font-size: 12px; color: #a5b0bd; cursor: pointer;'>Показать/скрыть ингредиенты</summary>";
+            
+            for (const auto& ingredient : recipe.ingredients) {
+                QString ingredientIcon = getBuildingIcon(gdata.getItem(ingredient.itemClass).description); 
+                
+                ingredientsHtml += QString(
+                    "<div style='margin-left: %1px; font-size: 13px; color: #c9d1d9; padding: 4px 0;'>"
+                    "<span style='font-family: monospace; color: rgba(140, 140, 140, 0.7);'>└→ </span>"
+                    "<span style='color: #58a6ff;'>%2 %3</span>: "
+                    "<b style='color: #ffd700;'>%4/мин</b>"
+                    "</div>"
+                ).arg(depth * 15)
+                 .arg(ingredientIcon)
+                 .arg(gdata.getItemName(ingredient.itemClass))
+                 .arg(QString::number(ingredient.amount * craftsPerMinute, 'f', 2));
+            }
+            ingredientsHtml += "</details>";
+        }
+
         QString currentItemInfo = QString(
             "<div style='"
-            "margin: 6px 0; "
-            "padding: 12px 16px; "
-            "background: linear-gradient(135deg, %1, rgba(22, 27, 34, 0.3)); "
+            "margin: 8px 0; "
+            "padding: 16px; "
+            "background: linear-gradient(135deg, %1, rgba(22, 27, 34, 0.5)); "
             "border-left: 4px solid %2; "
-            "border-radius: 8px; "
-            "box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);"
+            "border-radius: 12px; "
+            "box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);"
             "'>"
-            "%3"
-            "<span style='color: #f0f6fc; font-weight: 600; font-size: 14px;'>%4</span> "
-            "<span style='color: rgba(240, 246, 252, 0.7); font-size: 12px;'>(%5/мин)</span>"
-            "<span style='color: rgba(140, 140, 140, 0.8); margin: 0 8px;'>→</span>"
-            "<span style='color: #2ea043; font-weight: bold; font-size: 13px;'>%.2f</span> "
-            "<span style='color: #58a6ff; font-weight: 500;'>%6 %7</span>"
-            "%8"
+            // Header
+            "<div>"
+            "%3" // Tree prefix
+            "<span style='color: #f0f6fc; font-weight: 600; font-size: 15px;'>%4</span> "
+            "<span style='color: rgba(240, 246, 252, 0.7); font-size: 13px;'>(%5/мин)</span> "
+            "<span style='color: rgba(140, 140, 140, 0.8); margin: 0 8px;'>→</span> "
+            "<span style='color: #34d399; font-weight: bold; font-size: 14px;'>%6 x </span>"
+            "<span style='color: #a5d6a7; font-weight: 500;'>%7 %8</span>"
+            "</div>"
+            // Alternate recipe badge
+            "%9" 
+            // Ingredients list
+            "%10"
             "</div>"
         ).arg(bgColor)
          .arg(levelColor)
          .arg(treePrefix)
          .arg(gdata.getItemName(itemClass))
          .arg(QString::number(amountPerMinute, 'f', 2))
-         .arg(machinesNeeded)
+         .arg(QString::number(machinesNeeded, 'f', 2))
          .arg(buildingIcon)
          .arg(recipe.building)
          .arg(recipe.name.contains("альт", Qt::CaseInsensitive) || recipe.className.contains("Alternate") ? 
-              QString("<div style='margin-top: 6px;'>"
+              QString("<div style='margin-top: 8px;'>"
                      "<span style='color: #ff7b72; font-weight: 600; background: rgba(255, 123, 114, 0.15); "
-                     "padding: 3px 8px; border-radius: 4px; font-size: 11px;'>"
+                     "padding: 4px 8px; border-radius: 6px; font-size: 12px;'>"
                      "ALT: %1</span>"
-                     "</div>").arg(recipe.name) : "");
+                     "</div>").arg(recipe.name) : "")
+         .arg(ingredientsHtml); 
         
         m_tempCalculationSteps.append(currentItemInfo);
     }
@@ -1625,21 +1722,17 @@ void MainWindow::startLazyLoadAlternateRecipes()
     const auto& items = gameData.getItems();
     for (auto itemIt = items.constBegin(); itemIt != items.constEnd(); ++itemIt) {
         QString itemClass = itemIt.key();
-        if (gameData.hasRecipeForItem(itemClass)) {
-            auto recipes = gameData.getRecipesForItem(itemClass);
-            
-            // Ищем альтернативные рецепты
-            QList<GameRecipe> alternates;
-            for (const auto& recipe : recipes) {
-                if (recipe.name.contains("альт", Qt::CaseInsensitive) || 
-                    recipe.className.contains("Alternate", Qt::CaseInsensitive)) {
-                    alternates.append(recipe);
-                }
-            }
-            
-            if (!alternates.isEmpty()) {
-                alternatesByItem[itemClass] = alternates;
-            }
+        if (!gameData.hasRecipeForItem(itemClass)) continue;
+
+        auto recipes = gameData.getRecipesForItem(itemClass);
+        if (recipes.size() <= 1) continue; // нет альтернатив
+
+        QList<GameRecipe> alternates;
+        for (int i = 1; i < recipes.size(); ++i) {
+            alternates.append(recipes[i]); // все, кроме первого, считаем альтернативами
+        }
+        if (!alternates.isEmpty()) {
+            alternatesByItem[itemClass] = alternates;
         }
     }
     
@@ -1802,9 +1895,11 @@ QString MainWindow::getBuildingIcon(const QString& building) const
         {"Литейная", "🔥"},
         {"Очиститель", "💧"},
         {"Плавильня", "⚒️"},
-        {"Ускоритель частиц", "⚡"},
+        {"Ускоритель частиц", "⚛️"},
         {"Квантовый кодер", "🔮"},
-        {"Конвертер", "🔄"}
+        {"Конвертер", "🔄"},
+        {"Водозабор", "🌊"},
+        {"Нефтеперерабатывающий завод", "🛢️"}
     };
     
     return buildingIcons.value(building, "🏗️");
@@ -2041,4 +2136,30 @@ void MainWindow::onHubTierChanged()
 {
     int tier = m_hubTierCombo->currentData().toInt();
     setupHubCustomInputs(tier);
+}
+
+void MainWindow::buildTree(const QString &itemClass, double amountPerMinute, QTreeWidgetItem *parentItem, int depth)
+{
+    const auto &gdata = GameData::instance();
+    if (depth > 20) return;
+    if (!gdata.hasRecipeForItem(itemClass)) {
+        // raw resource
+        parentItem->setForeground(0, QBrush(QColor("#89b4fa")));
+        return;
+    }
+    GameRecipe recipe = getBestRecipeForItem(itemClass);
+    double itemsPerCraft = 0.0;
+    for (const auto &prod : recipe.products) {
+        if (prod.itemClass == itemClass) { itemsPerCraft = prod.amount; break; }
+    }
+    if (itemsPerCraft == 0) return;
+    double craftsPerMinute = amountPerMinute / itemsPerCraft;
+    for (const auto &ing : recipe.ingredients) {
+        double reqRate = ing.amount * craftsPerMinute;
+        QTreeWidgetItem *child = new QTreeWidgetItem(parentItem);
+        child->setText(0, gdata.getItemName(ing.itemClass));
+        child->setText(1, QString::number(reqRate, 'f', 2));
+        child->setText(2, recipe.building);
+        buildTree(ing.itemClass, reqRate, child, depth + 1);
+    }
 } 

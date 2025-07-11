@@ -6,19 +6,98 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1200</width>
+    <height>800</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Satisfactory Calculator</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">
+    QMainWindow {
+        background-color: #1e1e2e;
+        color: #cdd6f4;
+    }
+    QTabWidget::pane {
+        border: 1px solid #313244;
+        background: #1e1e2e;
+        border-radius: 8px;
+    }
+    QTabWidget::tab-bar {
+        alignment: center;
+    }
+    QTabBar::tab {
+        background: #313244;
+        color: #cdd6f4;
+        padding: 8px 20px;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        margin-right: 2px;
+    }
+    QTabBar::tab:selected {
+        background: #45475a;
+        color: #89b4fa;
+    }
+    QLabel {
+        color: #cdd6f4;
+        font-size: 14px;
+    }
+    QPushButton {
+        background-color: #89b4fa;
+        color: #1e1e2e;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+    }
+    QPushButton:hover {
+        background-color: #b4befe;
+    }
+    QLineEdit, QComboBox {
+        background-color: #313244;
+        color: #cdd6f4;
+        padding: 6px;
+        border: 1px solid #45475a;
+        border-radius: 6px;
+    }
+    QTextBrowser {
+        background-color: #313244;
+        color: #cdd6f4;
+        border: 1px solid #45475a;
+        border-radius: 8px;
+        padding: 10px;
+        font-family: 'Segoe UI', sans-serif;
+        font-size: 14px;
+    }
+    QScrollArea {
+        border: 1px solid #45475a;
+        border-radius: 8px;
+        background-color: #313244;
+    }
+   </string>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>12</number>
+    </property>
+    <property name="leftMargin">
+     <number>16</number>
+    </property>
+    <property name="topMargin">
+     <number>16</number>
+    </property>
+    <property name="rightMargin">
+     <number>16</number>
+    </property>
+    <property name="bottomMargin">
+     <number>16</number>
+    </property>
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab_lift">
        <attribute name="title">
@@ -34,13 +113,13 @@
       </widget>
       <widget class="QWidget" name="tab_custom">
        <attribute name="title">
-        <string>Кастом</string>
+        <string>Калькулятор</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_custom">
         <item>
          <widget class="QLabel" name="label_welcome">
           <property name="text">
-           <string>Добро пожаловать в Satisfactory Calculator!</string>
+           <string>&lt;h1 style=&quot;color: #89b4fa;&quot;&gt;Satisfactory Calculator&lt;/h1&gt;</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -49,6 +128,9 @@
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_input">
+          <property name="spacing">
+           <number>12</number>
+          </property>
           <item>
            <widget class="QLabel" name="label_product">
             <property name="text">
@@ -57,7 +139,11 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBox_product"/>
+           <widget class="QComboBox" name="comboBox_product">
+            <property name="minimumWidth">
+             <number>200</number>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QLabel" name="label_quantity">
@@ -68,6 +154,9 @@
           </item>
           <item>
            <widget class="QLineEdit" name="lineEdit_quantity">
+            <property name="maximumWidth">
+             <number>100</number>
+            </property>
             <property name="text">
              <string>1</string>
             </property>
@@ -76,14 +165,89 @@
           <item>
            <widget class="QPushButton" name="pushButton_calculate">
             <property name="text">
-             <string>Рассчитать</string>
+             <string>🔍 Рассчитать</string>
             </property>
            </widget>
           </item>
          </layout>
         </item>
         <item>
-         <widget class="QTextBrowser" name="textBrowser_results"/>
+         <widget class="QSplitter" name="splitter">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <widget class="QWidget" name="widget_tree" native="true">
+           <layout class="QVBoxLayout" name="verticalLayout_tree">
+            <item>
+             <widget class="QLabel" name="label_tree">
+              <property name="text">
+               <string>&lt;h3 style=&quot;color: #89b4fa;&quot;&gt;Дерево производства&lt;/h3&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QTreeWidget" name="treeWidget_results">
+              <property name="styleSheet">
+               <string>
+                QTreeWidget {
+                    background-color: #313244;
+                    color: #cdd6f4;
+                    border: 1px solid #45475a;
+                    border-radius: 8px;
+                    padding: 10px;
+                }
+                QTreeWidget::item {
+                    padding: 5px;
+                    border-bottom: 1px solid #45475a;
+                }
+                QTreeWidget::item:selected {
+                    background-color: #45475a;
+                    color: #89b4fa;
+                }
+               </string>
+              </property>
+              <column>
+               <property name="text">
+                <string>Компонент</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Количество</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Здания</string>
+               </property>
+              </column>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="widget_summary" native="true">
+           <layout class="QVBoxLayout" name="verticalLayout_summary">
+            <item>
+             <widget class="QLabel" name="label_summary">
+              <property name="text">
+               <string>&lt;h3 style=&quot;color: #89b4fa;&quot;&gt;Сводка ресурсов&lt;/h3&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QTextBrowser" name="textBrowser_results">
+              <property name="styleSheet">
+               <string>
+                QTextBrowser {
+                    line-height: 1.6;
+                }
+               </string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -95,7 +259,7 @@
         <item>
          <widget class="QLabel" name="label_alternates_header">
           <property name="text">
-           <string>&lt;h2&gt;🔧 Управление альтернативными рецептами&lt;/h2&gt;&lt;p&gt;Выберите альтернативные рецепты для использования в расчетах.&lt;/p&gt;</string>
+           <string>&lt;h2 style=&quot;color: #89b4fa;&quot;&gt;🔧 Управление альтернативными рецептами&lt;/h2&gt;&lt;p&gt;Выберите альтернативные рецепты для использования в расчетах.&lt;/p&gt;</string>
           </property>
           <property name="wordWrap">
            <bool>true</bool>
@@ -107,7 +271,7 @@
           <item>
            <widget class="QPushButton" name="pushButton_reset_alternates">
             <property name="text">
-             <string>Сбросить все</string>
+             <string>↺ Сбросить все</string>
             </property>
            </widget>
           </item>
@@ -127,7 +291,7 @@
           <item>
            <widget class="QPushButton" name="pushButton_apply_alternates">
             <property name="text">
-             <string>Применить изменения</string>
+             <string>✓ Применить изменения</string>
             </property>
            </widget>
           </item>
@@ -139,14 +303,6 @@
            <bool>true</bool>
           </property>
           <widget class="QWidget" name="scrollAreaWidgetContents">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>784</width>
-             <height>500</height>
-            </rect>
-           </property>
            <layout class="QVBoxLayout" name="verticalLayout_alternates_content"/>
           </widget>
          </widget>
@@ -162,7 +318,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1200</width>
      <height>21</height>
     </rect>
    </property>

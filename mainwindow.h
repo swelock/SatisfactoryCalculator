@@ -5,7 +5,6 @@
 #include <QMap>
 #include <QList>
 #include "game_data.h" // Включаем для GameRecipe
-
 // Forward declarations
 class QTabWidget;
 class QComboBox;
@@ -19,6 +18,8 @@ class QCheckBox;
 class QProgressBar;
 class QLabel;
 class QTimer;
+class QTreeWidget;
+class QTreeWidgetItem;
 
 // Helper function declaration
 GameRecipe selectBestRecipe(const QList<GameRecipe>& recipes);
@@ -64,6 +65,8 @@ private:
     void onLiftPhaseChanged();
     void setupHubCustomInputs(int tier);
     void onHubTierChanged();
+
+    void buildTree(const QString& itemClass, double amountPerMinute, QTreeWidgetItem* parentItem, int depth = 0);
 
     // Main layout
     QTabWidget* m_tabWidget;
@@ -127,6 +130,10 @@ private:
     // Hub production customization
     QMap<QString, QLineEdit*> m_hubProductionInputs; // itemClass -> input field
     QMap<QString, double> m_customHubRates; // itemClass -> custom rate per minute
+
+    QTreeWidget* m_treeWidgetResults;
+    QTreeWidget* m_treeWidgetHubResults;
+    QTreeWidget* m_treeWidgetCustomResults;
 };
 
 #endif // MAINWINDOW_H 

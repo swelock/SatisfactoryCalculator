@@ -384,4 +384,4 @@ void TestPerformance::benchmarkLargeCalculation()
 
 ---
 
-**С уважением SatisCalculatorTeam** 
+**Удачи в разработке! 🚀** 
