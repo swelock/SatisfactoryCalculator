@@ -17,6 +17,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # C++17 support
 CONFIG += c++17
 
+# Include directories
+INCLUDEPATH += include
+
 # Optimization flags
 CONFIG(release, debug|release) {
     QMAKE_CXXFLAGS_RELEASE += -O3 -march=native
@@ -24,21 +27,21 @@ CONFIG(release, debug|release) {
 }
 
 SOURCES += \
-    main.cpp \
-    mainwindow.cpp \
-    game_data.cpp \
-    game_data_ext.cpp \
-    complete_alternates.cpp \
-    calculator_engine.cpp \
-    recipe_manager.cpp
+    src/main.cpp \
+    src/mainwindow.cpp \
+    src/game_data.cpp \
+    src/game_data_ext.cpp \
+    src/complete_alternates.cpp \
+    src/calculator_engine.cpp \
+    src/recipe_manager.cpp
 
 HEADERS += \
-    mainwindow.h \
-    game_data.h \
-    game_data_ext.h \
-    complete_alternates.h \
-    calculator_engine.h \
-    recipe_manager.h
+    include/mainwindow.h \
+    include/game_data.h \
+    include/game_data_ext.h \
+    include/complete_alternates.h \
+    include/calculator_engine.h \
+    include/recipe_manager.h
 
 FORMS += \
     mainwindow.ui 

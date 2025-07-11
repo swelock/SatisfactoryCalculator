@@ -39,9 +39,23 @@ endif()
 # ------------------------------------------------------------
 #  Сбор исходников проекта
 # ------------------------------------------------------------
-file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
-    "*.cpp"
-    "*.h"
+set(SRC_FILES
+    src/main.cpp
+    src/mainwindow.cpp
+    src/calculator_engine.cpp
+    src/recipe_manager.cpp
+    src/game_data.cpp
+    src/game_data_ext.cpp
+    src/complete_alternates.cpp
+)
+
+set(HEADER_FILES
+    include/mainwindow.h
+    include/calculator_engine.h
+    include/recipe_manager.h
+    include/game_data.h
+    include/game_data_ext.h
+    include/complete_alternates.h
 )
 
 # Файлы ресурсов и форм – CMake найдёт их автоматически через AUTOUIC/AUTORCC,
@@ -53,19 +67,20 @@ file(GLOB QRC_FILES CONFIGURE_DEPENDS "*.qrc")
 #  Исполняемый файл
 # ------------------------------------------------------------
 if (QT_MAJOR_VERSION EQUAL 6)
-    qt_add_executable(SatisCalculator ${SRC_FILES} ${UI_FILES} ${QRC_FILES})
+    qt_add_executable(SatisCalculator ${SRC_FILES} ${HEADER_FILES} ${UI_FILES} ${QRC_FILES})
     target_link_libraries(SatisCalculator PRIVATE Qt6::Widgets Qt6::Gui Qt6::Core)
 else()
-    add_executable(SatisCalculator ${SRC_FILES} ${UI_FILES} ${QRC_FILES})
+    add_executable(SatisCalculator ${SRC_FILES} ${HEADER_FILES} ${UI_FILES} ${QRC_FILES})
     target_link_libraries(SatisCalculator PRIVATE Qt5::Widgets Qt5::Gui Qt5::Core)
 endif()
 
 # ------------------------------------------------------------
-#  Дополнительные include-директории (если есть папка include/)
+#  Дополнительные include-директории
 # ------------------------------------------------------------
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/include)
-    target_include_directories(SatisCalculator PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-endif()
+target_include_directories(SatisCalculator PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
 
 # ------------------------------------------------------------
 #  Устанавливаем файл и его зависимости (install target)
@@ -75,8 +90,8 @@ install(TARGETS SatisCalculator DESTINATION bin)
 # ------------------------------------------------------------
 #  Удобная цель для запуска windeployqt после сборки (Windows)
 # ------------------------------------------------------------
-if (WIN32)
+if (WIN32 AND QT_MAJOR_VERSION EQUAL 6)
     add_custom_command(TARGET SatisCalculator POST_BUILD
-        COMMAND ${QT_PACKAGE}::windeployqt --no-angle --no-opengl-sw --no-translations $<TARGET_FILE_DIR:SatisCalculator>
+        COMMAND ${QT_PACKAGE}::windeployqt --no-opengl-sw $<TARGET_FILE_DIR:SatisCalculator>
         COMMENT "Running windeployqt ...")
 endif() 
