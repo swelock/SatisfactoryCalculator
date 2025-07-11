@@ -20,6 +20,8 @@
 #include <QTreeWidgetItem>
 #include <QBrush>
 #include <QHeaderView>
+#include <QGridLayout>
+#include <cmath>
 
 // Helper function implementation
 GameRecipe selectBestRecipe(const QList<GameRecipe>& recipes)
@@ -94,8 +96,31 @@ GameRecipe selectBestRecipe(const QList<GameRecipe>& recipes)
             totalInput += ingredient.amount * (60.0 / recipe.time);
         }
         
-        double efficiency = (totalInput > 0) ? (totalOutput / totalInput) : 0.0;
-        score += efficiency * 20.0;
+        // МАТЕМАТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем векторную норму для стабильной оценки
+        // Эффективность = sqrt(сумма_квадратов_выходов) / sqrt(сумма_квадратов_входов + время²)
+        double outputNorm = 0.0;
+        for (const auto& product : recipe.products) {
+            double rate = product.amount * (60.0 / recipe.time);
+            outputNorm += rate * rate;
+        }
+        outputNorm = sqrt(outputNorm);
+        
+        double inputNorm = 0.0;
+        for (const auto& ingredient : recipe.ingredients) {
+            double rate = ingredient.amount * (60.0 / recipe.time);
+            inputNorm += rate * rate;
+        }
+        // Добавляем штраф за время (нормализованный)
+        inputNorm += (recipe.time / 60.0) * (recipe.time / 60.0);
+        inputNorm = sqrt(inputNorm);
+        
+        double efficiency = (inputNorm > 0) ? (outputNorm / inputNorm) : 0.0;
+        
+        // Применяем логарифмическое масштабирование для стабилизации
+        if (efficiency > 0) {
+            efficiency = log(1.0 + efficiency) * 15.0;  // Снижаем вес после логарифма
+        }
+        score += efficiency;
         
         // Предпочитаем более быстрые рецепты
         score += (60.0 / recipe.time) * 2.0;
@@ -1118,9 +1143,12 @@ void MainWindow::setupLiftCustomInputs(int phase)
     // Создаем поля ввода для каждого требуемого предмета
     for (const auto& req : requirements) {
         QWidget *inputWidget = new QWidget();
-        QHBoxLayout *inputLayout = new QHBoxLayout(inputWidget);
+        QGridLayout *inputLayout = new QGridLayout(inputWidget);
         inputLayout->setContentsMargins(0, 0, 0, 0);
-        inputLayout->setSpacing(10);
+        inputLayout->setHorizontalSpacing(10);
+        inputLayout->setColumnStretch(0, 1);            // имя тянется
+        inputLayout->setColumnMinimumWidth(1, 120);     // "Нужно: ..."
+        inputLayout->setColumnMinimumWidth(3, 80);      // ввод
         
         // Название предмета
         QLabel *itemLabel = new QLabel(GameData::instance().getItemName(req.itemClass));
@@ -1166,12 +1194,12 @@ void MainWindow::setupLiftCustomInputs(int phase)
         QLabel *unitLabel = new QLabel("/мин");
         unitLabel->setStyleSheet("color: rgba(240, 246, 252, 0.7); font-size: 12px;");
         
-        inputLayout->addWidget(itemLabel);
-        inputLayout->addWidget(requiredLabel);
-        inputLayout->addWidget(arrowLabel);
-        inputLayout->addWidget(rateInput);
-        inputLayout->addWidget(unitLabel);
-        inputLayout->addStretch();
+        inputLayout->addWidget(itemLabel,   0, 0);
+        inputLayout->addWidget(requiredLabel,  0, 1);
+        inputLayout->addWidget(arrowLabel,  0, 2, Qt::AlignCenter);
+        inputLayout->addWidget(rateInput,  0, 3);
+        inputLayout->addWidget(unitLabel, 0, 4);
+        inputLayout->setColumnStretch(5, 1);
         
         // Стиль для контейнера
         inputWidget->setStyleSheet(
@@ -1187,6 +1215,28 @@ void MainWindow::setupLiftCustomInputs(int phase)
             "    border-color: rgba(88, 166, 255, 0.4);"
             "}"
         );
+        
+        // Синхронизация поля ввода с таблицей (без вызова calculateLift чтобы избежать рекурсии)
+        connect(rateInput, &QLineEdit::editingFinished, [this, req]() {
+            if (m_isUpdating) return;
+            bool ok;
+            double newRate = m_liftProductionInputs[req.itemClass]->text().toDouble(&ok);
+            if (ok && newRate > 0) {
+                // Обновляем значение в таблице
+                for (int i = 0; i < m_treeWidgetResults->topLevelItemCount(); ++i) {
+                    QTreeWidgetItem* item = m_treeWidgetResults->topLevelItem(i);
+                    if (item->text(0) == GameData::instance().getItemName(req.itemClass)) {
+                        item->setText(1, QString::number(newRate, 'f', 2));
+                        // Пересчитываем дерево для этого элемента
+                        while (item->childCount() > 0) {
+                            delete item->takeChild(0);
+                        }
+                        buildTree(req.itemClass, newRate, item, 0);
+                        break;
+                    }
+                }
+            }
+        });
         
         m_liftInputsLayout->addWidget(inputWidget);
         m_liftProductionInputs[req.itemClass] = rateInput;
@@ -1246,9 +1296,21 @@ void MainWindow::calculateLift()
     ).arg(phase);
 
     // Обновляем левое дерево
+    m_isUpdating = true; // Предотвращаем рекурсивные обновления
     m_treeWidgetResults->clear();
     for (const auto &req : requirements) {
         double productionRate = qMax(1.0, req.amount / 60.0);
+        
+        // Обновляем поле ввода если оно существует
+        if (m_liftProductionInputs.contains(req.itemClass)) {
+            QLineEdit* input = m_liftProductionInputs[req.itemClass];
+            bool ok;
+            double customRate = input->text().toDouble(&ok);
+            if (ok && customRate > 0) {
+                productionRate = customRate;
+            }
+        }
+        
         QTreeWidgetItem *root = new QTreeWidgetItem(m_treeWidgetResults);
         root->setText(0, GameData::instance().getItemName(req.itemClass));
         root->setText(1, QString::number(productionRate, 'f', 2));
@@ -1256,6 +1318,7 @@ void MainWindow::calculateLift()
         buildTree(req.itemClass, productionRate, root, 0);
         root->setExpanded(true);
     }
+    m_isUpdating = false;
 
     // Для космического лифта считаем как производство единичных предметов
     for (const auto& req : requirements) {
@@ -1417,9 +1480,21 @@ void MainWindow::calculateHub()
     m_hubResultOutput->setHtml(summaryHtml);
 
     // --- В calculateHub(), прямо перед строкой 'QString summaryHtml =' добавляю ---
+    m_isUpdating = true; // Предотвращаем рекурсивные обновления
     m_treeWidgetHubResults->clear();
     for (const auto &req : requirements) {
         double productionRate = qMax(1.0, req.amount / 60.0);
+        
+        // Обновляем поле ввода если оно существует
+        if (m_hubProductionInputs.contains(req.itemClass)) {
+            QLineEdit* input = m_hubProductionInputs[req.itemClass];
+            bool ok;
+            double customRate = input->text().toDouble(&ok);
+            if (ok && customRate > 0) {
+                productionRate = customRate;
+            }
+        }
+        
         QTreeWidgetItem *rootHub = new QTreeWidgetItem(m_treeWidgetHubResults);
         rootHub->setText(0, GameData::instance().getItemName(req.itemClass));
         rootHub->setText(1, QString::number(productionRate,'f',2));
@@ -1427,6 +1502,7 @@ void MainWindow::calculateHub()
         buildTree(req.itemClass, productionRate, rootHub, 0);
         rootHub->setExpanded(true);
     }
+    m_isUpdating = false;
 }
 
 void MainWindow::calculateCustom()
@@ -1561,7 +1637,13 @@ void MainWindow::calculateRequirements(const QString& itemClass, double amountPe
     }
 
     double craftsPerMinute = amountPerMinute / itemsPerCraft;
-    double machinesNeeded = craftsPerMinute * (recipe.time / 60.0);
+    // МАТЕМАТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Количество машин = (требуемые крафты/мин) / (крафтов/мин на машину)
+    // Крафтов в минуту на одну машину = 60 / время_рецепта_в_секундах
+    double recipeCraftsPerMinute = 60.0 / recipe.time;
+    double machinesNeeded = craftsPerMinute / recipeCraftsPerMinute;
+    
+    // Округляем до разумной точности (избегаем артефактов плавающей точки)
+    machinesNeeded = round(machinesNeeded * 1000.0) / 1000.0;
 
     // Добавляем информацию о текущем расчете только если depth < 10 (для производительности)
     if (depth < 10) {
@@ -2045,9 +2127,12 @@ void MainWindow::setupHubCustomInputs(int tier)
     // Создаем поля ввода для каждого требуемого предмета
     for (const auto& req : requirements) {
         QWidget *inputWidget = new QWidget();
-        QHBoxLayout *inputLayout = new QHBoxLayout(inputWidget);
+        QGridLayout *inputLayout = new QGridLayout(inputWidget);
         inputLayout->setContentsMargins(0, 0, 0, 0);
-        inputLayout->setSpacing(10);
+        inputLayout->setHorizontalSpacing(10);
+        inputLayout->setColumnStretch(0, 1);            // имя тянется
+        inputLayout->setColumnMinimumWidth(1, 120);     // "Нужно: ..."
+        inputLayout->setColumnMinimumWidth(3, 80);      // ввод
         
         // Название предмета
         QLabel *itemLabel = new QLabel(GameData::instance().getItemName(req.itemClass));
@@ -2093,12 +2178,12 @@ void MainWindow::setupHubCustomInputs(int tier)
         QLabel *unitLabel = new QLabel("/мин");
         unitLabel->setStyleSheet("color: rgba(240, 246, 252, 0.7); font-size: 12px;");
         
-        inputLayout->addWidget(itemLabel);
-        inputLayout->addWidget(requiredLabel);
-        inputLayout->addWidget(arrowLabel);
-        inputLayout->addWidget(rateInput);
-        inputLayout->addWidget(unitLabel);
-        inputLayout->addStretch();
+        inputLayout->addWidget(itemLabel,   0, 0);
+        inputLayout->addWidget(requiredLabel,  0, 1);
+        inputLayout->addWidget(arrowLabel,  0, 2, Qt::AlignCenter);
+        inputLayout->addWidget(rateInput,  0, 3);
+        inputLayout->addWidget(unitLabel, 0, 4);
+        inputLayout->setColumnStretch(5, 1);
         
         // Стиль для контейнера
         inputWidget->setStyleSheet(
@@ -2114,6 +2199,28 @@ void MainWindow::setupHubCustomInputs(int tier)
             "    border-color: rgba(255, 152, 0, 0.4);"
             "}"
         );
+        
+        // Синхронизация поля ввода с таблицей (без вызова calculateHub чтобы избежать рекурсии)
+        connect(rateInput, &QLineEdit::editingFinished, [this, req]() {
+            if (m_isUpdating) return;
+            bool ok;
+            double newRate = m_hubProductionInputs[req.itemClass]->text().toDouble(&ok);
+            if (ok && newRate > 0) {
+                // Обновляем значение в таблице
+                for (int i = 0; i < m_treeWidgetHubResults->topLevelItemCount(); ++i) {
+                    QTreeWidgetItem* item = m_treeWidgetHubResults->topLevelItem(i);
+                    if (item->text(0) == GameData::instance().getItemName(req.itemClass)) {
+                        item->setText(1, QString::number(newRate, 'f', 2));
+                        // Пересчитываем дерево для этого элемента
+                        while (item->childCount() > 0) {
+                            delete item->takeChild(0);
+                        }
+                        buildTree(req.itemClass, newRate, item, 0);
+                        break;
+                    }
+                }
+            }
+        });
         
         m_hubInputsLayout->addWidget(inputWidget);
         m_hubProductionInputs[req.itemClass] = rateInput;
@@ -2162,4 +2269,177 @@ void MainWindow::buildTree(const QString &itemClass, double amountPerMinute, QTr
         child->setText(2, recipe.building);
         buildTree(ing.itemClass, reqRate, child, depth + 1);
     }
-} 
+}
+
+// ===== МАТЕМАТИЧЕСКИЕ МЕТОДЫ ВАЛИДАЦИИ =====
+
+bool MainWindow::validateProductionChain(const QString& rootItem, double targetRate, QMap<QString, double>& resourceMap) const
+{
+    QSet<QString> visited;
+    QSet<QString> inStack;
+    
+    return validateCycleFree(rootItem, visited, inStack) && 
+           validateMassBalance(rootItem, targetRate, resourceMap);
+}
+
+bool MainWindow::validateCycleFree(const QString& item, QSet<QString>& visited, QSet<QString>& inStack) const
+{
+    if (inStack.contains(item)) {
+        qWarning() << "Cycle detected in production chain for item:" << item;
+        return false;
+    }
+    
+    if (visited.contains(item)) {
+        return true;
+    }
+    
+    visited.insert(item);
+    inStack.insert(item);
+    
+    const auto& gameData = GameData::instance();
+    if (gameData.hasRecipeForItem(item)) {
+        GameRecipe recipe = getBestRecipeForItem(item);
+        for (const auto& ingredient : recipe.ingredients) {
+            if (!validateCycleFree(ingredient.itemClass, visited, inStack)) {
+                return false;
+            }
+        }
+    }
+    
+    inStack.remove(item);
+    return true;
+}
+
+bool MainWindow::validateMassBalance(const QString& item, double targetRate, QMap<QString, double>& resourceMap) const
+{
+    const auto& gameData = GameData::instance();
+    
+    if (!gameData.hasRecipeForItem(item)) {
+        resourceMap[item] += targetRate;
+        return true;
+    }
+    
+    GameRecipe recipe = getBestRecipeForItem(item);
+    double itemsPerCraft = 0.0;
+    
+    for (const auto& product : recipe.products) {
+        if (product.itemClass == item) {
+            itemsPerCraft = product.amount;
+            break;
+        }
+    }
+    
+    if (itemsPerCraft <= 0) {
+        qWarning() << "Invalid recipe output for item:" << item;
+        return false;
+    }
+    
+    double craftsPerMinute = targetRate / itemsPerCraft;
+    
+    for (const auto& ingredient : recipe.ingredients) {
+        double requiredRate = ingredient.amount * craftsPerMinute;
+        if (!validateMassBalance(ingredient.itemClass, requiredRate, resourceMap)) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+QMap<QString, double> MainWindow::optimizeProductionChain(const QString& targetItem, double targetRate) const
+{
+    QMap<QString, double> optimizedRates;
+    QMap<QString, QList<QString>> dependencyGraph;
+    QMap<QString, GameRecipe> itemRecipes;
+    
+    buildDependencyGraph(targetItem, dependencyGraph, itemRecipes);
+    QList<QString> topologicalOrder = topologicalSort(dependencyGraph);
+    
+    optimizedRates[targetItem] = targetRate;
+    
+    for (const QString& item : topologicalOrder) {
+        if (!optimizedRates.contains(item)) continue;
+        
+        double requiredRate = optimizedRates[item];
+        
+        if (itemRecipes.contains(item)) {
+            GameRecipe recipe = itemRecipes[item];
+            double itemsPerCraft = 0.0;
+            
+            for (const auto& product : recipe.products) {
+                if (product.itemClass == item) {
+                    itemsPerCraft = product.amount;
+                    break;
+                }
+            }
+            
+            if (itemsPerCraft > 0) {
+                double craftsPerMinute = requiredRate / itemsPerCraft;
+                
+                for (const auto& ingredient : recipe.ingredients) {
+                    double ingredientRate = ingredient.amount * craftsPerMinute;
+                    optimizedRates[ingredient.itemClass] += ingredientRate;
+                }
+            }
+        }
+    }
+    
+    return optimizedRates;
+}
+
+void MainWindow::buildDependencyGraph(const QString& item, QMap<QString, QList<QString>>& graph, QMap<QString, GameRecipe>& recipes) const
+{
+    if (graph.contains(item)) return;
+    
+    const auto& gameData = GameData::instance();
+    graph[item] = QList<QString>();
+    
+    if (gameData.hasRecipeForItem(item)) {
+        GameRecipe recipe = getBestRecipeForItem(item);
+        recipes[item] = recipe;
+        
+        for (const auto& ingredient : recipe.ingredients) {
+            graph[item].append(ingredient.itemClass);
+            buildDependencyGraph(ingredient.itemClass, graph, recipes);
+        }
+    }
+}
+
+QList<QString> MainWindow::topologicalSort(const QMap<QString, QList<QString>>& graph) const
+{
+    QList<QString> result;
+    QMap<QString, int> inDegree;
+    QQueue<QString> queue;
+    
+    for (auto it = graph.constBegin(); it != graph.constEnd(); ++it) {
+        if (!inDegree.contains(it.key())) {
+            inDegree[it.key()] = 0;
+        }
+        
+        for (const QString& dependency : it.value()) {
+            inDegree[dependency]++;
+        }
+    }
+    
+    for (auto it = inDegree.constBegin(); it != inDegree.constEnd(); ++it) {
+        if (it.value() == 0) {
+            queue.enqueue(it.key());
+        }
+    }
+    
+    while (!queue.isEmpty()) {
+        QString current = queue.dequeue();
+        result.append(current);
+        
+        if (graph.contains(current)) {
+            for (const QString& dependency : graph[current]) {
+                inDegree[dependency]--;
+                if (inDegree[dependency] == 0) {
+                    queue.enqueue(dependency);
+                }
+            }
+        }
+    }
+    
+    return result;
+}

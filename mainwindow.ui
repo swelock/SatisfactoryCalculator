@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1200</width>
-    <height>800</height>
+    <width>1400</width>
+    <height>900</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,84 +15,298 @@
   </property>
   <property name="styleSheet">
    <string notr="true">
+    /* ===== ГЛОБАЛЬНЫЕ СТИЛИ ===== */
     QMainWindow {
-        background-color: #1e1e2e;
-        color: #cdd6f4;
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:1, 
+            stop:0 #0f0f23, stop:0.3 #1a1a2e, stop:0.7 #16213e, stop:1 #0f3460);
+        color: #e1e5f2;
+        font-family: 'Segoe UI', 'Roboto', 'Inter', sans-serif;
     }
+    
+    /* ===== ВКЛАДКИ ===== */
     QTabWidget::pane {
-        border: 1px solid #313244;
-        background: #1e1e2e;
-        border-radius: 8px;
+        border: 2px solid rgba(88, 166, 255, 0.3);
+        background: rgba(22, 27, 34, 0.85);
+        border-radius: 16px;
+        margin-top: 8px;
     }
+    
     QTabWidget::tab-bar {
         alignment: center;
     }
+    
     QTabBar::tab {
-        background: #313244;
-        color: #cdd6f4;
-        padding: 8px 20px;
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
-        margin-right: 2px;
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+            stop:0 rgba(49, 50, 68, 0.9), stop:1 rgba(33, 38, 45, 0.9));
+        color: #a5b0bd;
+        padding: 16px 28px;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        margin-right: 4px;
+        font-size: 15px;
+        font-weight: 600;
+        border: 2px solid rgba(88, 166, 255, 0.1);
+        border-bottom: none;
+        transition: all 0.3s ease;
     }
+    
     QTabBar::tab:selected {
-        background: #45475a;
-        color: #89b4fa;
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+            stop:0 #58a6ff, stop:0.3 #388bfd, stop:0.7 #2563eb, stop:1 #1d4ed8);
+        color: white;
+        border-color: #58a6ff;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        transform: translateY(-2px);
     }
-    QLabel {
-        color: #cdd6f4;
-        font-size: 14px;
+    
+    QTabBar::tab:hover:!selected {
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+            stop:0 rgba(88, 166, 255, 0.4), stop:1 rgba(56, 139, 253, 0.3));
+        color: #e1e5f2;
+        border-color: rgba(88, 166, 255, 0.6);
+        transform: translateY(-1px);
     }
+    
+    /* ===== КНОПКИ ===== */
     QPushButton {
-        background-color: #89b4fa;
-        color: #1e1e2e;
-        padding: 8px 16px;
-        border: none;
-        border-radius: 6px;
-        font-weight: bold;
-    }
-    QPushButton:hover {
-        background-color: #b4befe;
-    }
-    QLineEdit, QComboBox {
-        background-color: #313244;
-        color: #cdd6f4;
-        padding: 6px;
-        border: 1px solid #45475a;
-        border-radius: 6px;
-    }
-    QTextBrowser {
-        background-color: #313244;
-        color: #cdd6f4;
-        border: 1px solid #45475a;
-        border-radius: 8px;
-        padding: 10px;
-        font-family: 'Segoe UI', sans-serif;
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+            stop:0 #2563eb, stop:0.5 #1d4ed8, stop:1 #1e40af);
+        color: white;
+        padding: 12px 24px;
+        border: 2px solid rgba(37, 99, 235, 0.8);
+        border-radius: 10px;
+        font-weight: 700;
         font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
-    QScrollArea {
-        border: 1px solid #45475a;
+    
+    QPushButton:hover {
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+            stop:0 #3b82f6, stop:0.5 #2563eb, stop:1 #1d4ed8);
+        border-color: #3b82f6;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    }
+    
+    QPushButton:pressed {
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+            stop:0 #1d4ed8, stop:1 #1e3a8a);
+        transform: translateY(0px);
+        box-shadow: 0 4px 15px rgba(29, 78, 216, 0.3);
+    }
+    
+    /* ===== ПОЛЯ ВВОДА ===== */
+    QLineEdit, QComboBox {
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+            stop:0 rgba(30, 41, 59, 0.95), stop:1 rgba(15, 23, 42, 0.95));
+        color: #e1e5f2;
+        padding: 12px 16px;
+        border: 2px solid rgba(71, 85, 105, 0.6);
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    QLineEdit:focus, QComboBox:focus {
+        border-color: #58a6ff;
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+            stop:0 rgba(56, 139, 253, 0.15), stop:1 rgba(30, 41, 59, 0.95));
+        box-shadow: 0 0 0 4px rgba(88, 166, 255, 0.15);
+    }
+    
+    QLineEdit:hover, QComboBox:hover {
+        border-color: rgba(100, 116, 139, 0.8);
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+            stop:0 rgba(51, 65, 85, 0.95), stop:1 rgba(30, 41, 59, 0.95));
+    }
+    
+    /* ===== DROPDOWN ===== */
+    QComboBox::drop-down {
+        border: none;
+        width: 40px;
+        background: transparent;
+    }
+    
+    QComboBox::down-arrow {
+        image: none;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 10px solid #94a3b8;
+        margin-right: 20px;
+    }
+    
+    QComboBox::down-arrow:hover {
+        border-top-color: #58a6ff;
+    }
+    
+    QComboBox QAbstractItemView {
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+            stop:0 rgba(30, 41, 59, 0.98), stop:1 rgba(15, 23, 42, 0.98));
+        border: 2px solid rgba(88, 166, 255, 0.6);
+        border-radius: 12px;
+        selection-background-color: rgba(88, 166, 255, 0.4);
+        color: #e1e5f2;
+        font-size: 14px;
+        padding: 8px;
+        backdrop-filter: blur(10px);
+    }
+    
+    QComboBox QAbstractItemView::item {
+        padding: 12px 16px;
         border-radius: 8px;
-        background-color: #313244;
+        margin: 2px;
+        min-height: 20px;
+    }
+    
+    QComboBox QAbstractItemView::item:hover {
+        background: rgba(88, 166, 255, 0.25);
+        color: white;
+    }
+    
+    QComboBox QAbstractItemView::item:selected {
+        background: rgba(88, 166, 255, 0.5);
+        color: white;
+        font-weight: 600;
+    }
+    
+    /* ===== ТЕКСТОВЫЕ ОБЛАСТИ ===== */
+    QTextBrowser {
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+            stop:0 rgba(15, 23, 42, 0.95), stop:1 rgba(30, 41, 59, 0.85));
+        color: #e1e5f2;
+        border: 2px solid rgba(71, 85, 105, 0.4);
+        border-radius: 12px;
+        padding: 20px;
+        font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+        font-size: 14px;
+        line-height: 1.8;
+        selection-background-color: rgba(88, 166, 255, 0.3);
+        backdrop-filter: blur(5px);
+    }
+    
+    QTextBrowser:focus {
+        border-color: rgba(88, 166, 255, 0.8);
+        box-shadow: 0 0 0 4px rgba(88, 166, 255, 0.1);
+    }
+    
+    /* ===== ДЕРЕВЬЯ ===== */
+    QTreeWidget {
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+            stop:0 rgba(15, 23, 42, 0.95), stop:1 rgba(30, 41, 59, 0.85));
+        color: #e1e5f2;
+        border: 2px solid rgba(71, 85, 105, 0.4);
+        border-radius: 12px;
+        padding: 12px;
+        font-size: 14px;
+        gridline-color: rgba(71, 85, 105, 0.3);
+        selection-background-color: rgba(88, 166, 255, 0.3);
+        alternate-background-color: rgba(51, 65, 85, 0.3);
+        backdrop-filter: blur(5px);
+    }
+    
+    QTreeWidget::item {
+        padding: 8px 4px;
+        border-bottom: 1px solid rgba(71, 85, 105, 0.2);
+        border-radius: 6px;
+        margin: 1px;
+    }
+    
+    QTreeWidget::item:selected {
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+            stop:0 rgba(88, 166, 255, 0.4), stop:1 rgba(59, 130, 246, 0.3));
+        color: white;
+        font-weight: 600;
+    }
+    
+    QTreeWidget::item:hover {
+        background: rgba(71, 85, 105, 0.4);
+        color: #f1f5f9;
+    }
+    
+    QHeaderView::section {
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+            stop:0 rgba(71, 85, 105, 0.8), stop:1 rgba(51, 65, 85, 0.8));
+        color: #f1f5f9;
+        padding: 12px 8px;
+        border: 1px solid rgba(100, 116, 139, 0.3);
+        font-weight: 700;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* ===== ОБЛАСТИ ПРОКРУТКИ ===== */
+    QScrollArea {
+        border: 2px solid rgba(71, 85, 105, 0.3);
+        border-radius: 12px;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(10px);
+    }
+    
+    QScrollBar:vertical, QScrollBar:horizontal {
+        background: rgba(30, 41, 59, 0.7);
+        width: 14px;
+        height: 14px;
+        border-radius: 7px;
+        margin: 0;
+    }
+    
+    QScrollBar::handle:vertical, QScrollBar::handle:horizontal {
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+            stop:0 rgba(88, 166, 255, 0.7), stop:1 rgba(59, 130, 246, 0.7));
+        border-radius: 7px;
+        min-height: 30px;
+        min-width: 30px;
+    }
+    
+    QScrollBar::handle:hover {
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+            stop:0 rgba(88, 166, 255, 0.9), stop:1 rgba(59, 130, 246, 0.9));
+    }
+    
+    QScrollBar::add-line, QScrollBar::sub-line {
+        background: none;
+        border: none;
+    }
+    
+    /* ===== МЕТКИ ===== */
+    QLabel {
+        color: #e1e5f2;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    /* ===== РАЗДЕЛИТЕЛИ ===== */
+    QSplitter::handle {
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+            stop:0 rgba(71, 85, 105, 0.6), stop:0.5 rgba(88, 166, 255, 0.4), stop:1 rgba(71, 85, 105, 0.6));
+        border-radius: 3px;
+        margin: 2px;
+    }
+    
+    QSplitter::handle:hover {
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+            stop:0 rgba(88, 166, 255, 0.6), stop:0.5 rgba(59, 130, 246, 0.8), stop:1 rgba(88, 166, 255, 0.6));
     }
    </string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <property name="spacing">
-     <number>12</number>
+     <number>16</number>
     </property>
     <property name="leftMargin">
-     <number>16</number>
+     <number>20</number>
     </property>
     <property name="topMargin">
-     <number>16</number>
+     <number>20</number>
     </property>
     <property name="rightMargin">
-     <number>16</number>
+     <number>20</number>
     </property>
     <property name="bottomMargin">
-     <number>16</number>
+     <number>20</number>
     </property>
     <item>
      <widget class="QTabWidget" name="tabWidget">
@@ -101,25 +315,25 @@
       </property>
       <widget class="QWidget" name="tab_lift">
        <attribute name="title">
-        <string>Лифт</string>
+        <string>🚀 Космический Лифт</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_lift"/>
       </widget>
       <widget class="QWidget" name="tab_hub">
        <attribute name="title">
-        <string>Хаб</string>
+        <string>🏭 Улучшения ХАБа</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_hub"/>
       </widget>
       <widget class="QWidget" name="tab_custom">
        <attribute name="title">
-        <string>Калькулятор</string>
+        <string>⚙️ Калькулятор</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_custom">
         <item>
          <widget class="QLabel" name="label_welcome">
           <property name="text">
-           <string>&lt;h1 style=&quot;color: #89b4fa;&quot;&gt;Satisfactory Calculator&lt;/h1&gt;</string>
+           <string>&lt;h1 style=&quot;color: #58a6ff; text-align: center; margin: 20px 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 10px rgba(88, 166, 255, 0.3);&quot;&gt;🎯 Satisfactory Calculator&lt;/h1&gt;&lt;p style=&quot;text-align: center; color: #94a3b8; font-size: 16px; margin-bottom: 30px;&quot;&gt;Профессиональный расчёт производственных цепочек&lt;/p&gt;</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -129,7 +343,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_input">
           <property name="spacing">
-           <number>12</number>
+           <number>16</number>
           </property>
           <item>
            <widget class="QLabel" name="label_product">
@@ -141,7 +355,7 @@
           <item>
            <widget class="QComboBox" name="comboBox_product">
             <property name="minimumWidth">
-             <number>200</number>
+             <number>250</number>
             </property>
            </widget>
           </item>
@@ -155,7 +369,7 @@
           <item>
            <widget class="QLineEdit" name="lineEdit_quantity">
             <property name="maximumWidth">
-             <number>100</number>
+             <number>120</number>
             </property>
             <property name="text">
              <string>1</string>
@@ -181,31 +395,12 @@
             <item>
              <widget class="QLabel" name="label_tree">
               <property name="text">
-               <string>&lt;h3 style=&quot;color: #89b4fa;&quot;&gt;Дерево производства&lt;/h3&gt;</string>
+               <string>&lt;h3 style=&quot;color: #58a6ff; margin: 0 0 12px 0; font-size: 18px; font-weight: 600;&quot;&gt;📊 Дерево производства&lt;/h3&gt;</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QTreeWidget" name="treeWidget_results">
-              <property name="styleSheet">
-               <string>
-                QTreeWidget {
-                    background-color: #313244;
-                    color: #cdd6f4;
-                    border: 1px solid #45475a;
-                    border-radius: 8px;
-                    padding: 10px;
-                }
-                QTreeWidget::item {
-                    padding: 5px;
-                    border-bottom: 1px solid #45475a;
-                }
-                QTreeWidget::item:selected {
-                    background-color: #45475a;
-                    color: #89b4fa;
-                }
-               </string>
-              </property>
               <column>
                <property name="text">
                 <string>Компонент</string>
@@ -230,20 +425,12 @@
             <item>
              <widget class="QLabel" name="label_summary">
               <property name="text">
-               <string>&lt;h3 style=&quot;color: #89b4fa;&quot;&gt;Сводка ресурсов&lt;/h3&gt;</string>
+               <string>&lt;h3 style=&quot;color: #58a6ff; margin: 0 0 12px 0; font-size: 18px; font-weight: 600;&quot;&gt;⛏️ Сводка ресурсов&lt;/h3&gt;</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QTextBrowser" name="textBrowser_results">
-              <property name="styleSheet">
-               <string>
-                QTextBrowser {
-                    line-height: 1.6;
-                }
-               </string>
-              </property>
-             </widget>
+             <widget class="QTextBrowser" name="textBrowser_results"/>
             </item>
            </layout>
           </widget>
@@ -253,13 +440,13 @@
       </widget>
       <widget class="QWidget" name="tab_alternates">
        <attribute name="title">
-        <string>Альтернативные рецепты</string>
+        <string>🔧 Альтернативные рецепты</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_alternates">
         <item>
          <widget class="QLabel" name="label_alternates_header">
           <property name="text">
-           <string>&lt;h2 style=&quot;color: #89b4fa;&quot;&gt;🔧 Управление альтернативными рецептами&lt;/h2&gt;&lt;p&gt;Выберите альтернативные рецепты для использования в расчетах.&lt;/p&gt;</string>
+           <string>&lt;h2 style=&quot;color: #58a6ff; text-align: center; margin: 15px 0; font-size: 24px; font-weight: 700;&quot;&gt;🔧 Управление альтернативными рецептами&lt;/h2&gt;&lt;p style=&quot;text-align: center; color: #94a3b8; font-size: 15px; margin-bottom: 25px;&quot;&gt;Выберите альтернативные рецепты для оптимизации производственных цепочек&lt;/p&gt;</string>
           </property>
           <property name="wordWrap">
            <bool>true</bool>
@@ -318,7 +505,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1200</width>
+     <width>1400</width>
      <height>21</height>
     </rect>
    </property>

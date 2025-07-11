@@ -4,6 +4,10 @@
 #include <QMainWindow>
 #include <QMap>
 #include <QList>
+#include <QVector>
+#include <QSet>
+#include <QQueue>
+
 #include "game_data.h" // Включаем для GameRecipe
 // Forward declarations
 class QTabWidget;
@@ -67,6 +71,14 @@ private:
     void onHubTierChanged();
 
     void buildTree(const QString& itemClass, double amountPerMinute, QTreeWidgetItem* parentItem, int depth = 0);
+    
+    // Математические методы валидации и оптимизации
+    bool validateProductionChain(const QString& rootItem, double targetRate, QMap<QString, double>& resourceMap) const;
+    bool validateCycleFree(const QString& item, QSet<QString>& visited, QSet<QString>& inStack) const;
+    bool validateMassBalance(const QString& item, double targetRate, QMap<QString, double>& resourceMap) const;
+    QMap<QString, double> optimizeProductionChain(const QString& targetItem, double targetRate) const;
+    void buildDependencyGraph(const QString& item, QMap<QString, QList<QString>>& graph, QMap<QString, GameRecipe>& recipes) const;
+    QList<QString> topologicalSort(const QMap<QString, QList<QString>>& graph) const;
 
     // Main layout
     QTabWidget* m_tabWidget;
@@ -134,6 +146,9 @@ private:
     QTreeWidget* m_treeWidgetResults;
     QTreeWidget* m_treeWidgetHubResults;
     QTreeWidget* m_treeWidgetCustomResults;
+    
+    // Флаг для предотвращения рекурсивных обновлений
+    bool m_isUpdating = false;
 };
 
 #endif // MAINWINDOW_H 
