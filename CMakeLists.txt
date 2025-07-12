@@ -3,7 +3,10 @@ cmake_minimum_required(VERSION 3.16)
 # ------------------------------------------------------------
 #  Проект SatisCalculator (перенос с qmake на CMake)
 # ------------------------------------------------------------
-project(SatisCalculator LANGUAGES CXX)
+project(SatisCalculator 
+    VERSION 1.0.0
+    DESCRIPTION "Professional production chain calculator for Satisfactory game"
+    LANGUAGES CXX)
 
 # ------------------------------------------------------------
 #  Поиск Qt – пробуем сначала Qt6, затем Qt5
@@ -83,15 +86,69 @@ target_include_directories(SatisCalculator PRIVATE
 )
 
 # ------------------------------------------------------------
-#  Устанавливаем файл и его зависимости (install target)
+#  Установка исполняемого файла
 # ------------------------------------------------------------
-install(TARGETS SatisCalculator DESTINATION bin)
+install(TARGETS SatisCalculator 
+    RUNTIME DESTINATION bin
+    COMPONENT Runtime)
 
 # ------------------------------------------------------------
-#  Удобная цель для запуска windeployqt после сборки (Windows)
+#  Qt развертывание для Windows
 # ------------------------------------------------------------
 if (WIN32 AND QT_MAJOR_VERSION EQUAL 6)
-    add_custom_command(TARGET SatisCalculator POST_BUILD
-        COMMAND ${QT_PACKAGE}::windeployqt --no-opengl-sw $<TARGET_FILE_DIR:SatisCalculator>
-        COMMENT "Running windeployqt ...")
-endif() 
+    # Генерируем скрипт развертывания Qt
+    qt_generate_deploy_app_script(
+        TARGET SatisCalculator
+        OUTPUT_SCRIPT deploy_script
+        NO_UNSUPPORTED_PLATFORM_ERROR
+    )
+    
+    # Выполняем развертывание после установки
+    install(SCRIPT ${deploy_script} COMPONENT Runtime)
+endif()
+
+# ------------------------------------------------------------
+#  Настройка CPack для создания установщика
+# ------------------------------------------------------------
+set(CPACK_GENERATOR "IFW")
+set(CPACK_PACKAGE_NAME "Satisfactory Calculator Pro")
+set(CPACK_PACKAGE_VENDOR "SatisCalc Team")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Professional production chain calculator for Satisfactory game")
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "SatisfactoryCalculatorPro")
+
+# Настройки Qt IFW
+set(CPACK_IFW_PACKAGE_TITLE "Satisfactory Calculator Pro")
+set(CPACK_IFW_PACKAGE_PUBLISHER "SatisCalc Team")
+set(CPACK_IFW_PACKAGE_DESCRIPTION "Professional production chain calculator for Satisfactory game with modern UI and comprehensive recipe support.")
+set(CPACK_IFW_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/assets/icons/calculator.ico")
+set(CPACK_IFW_PACKAGE_WINDOW_ICON "${CMAKE_CURRENT_SOURCE_DIR}/assets/icons/calculator.ico")
+set(CPACK_IFW_PACKAGE_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/assets/icons/calculator.png")
+set(CPACK_IFW_PACKAGE_WIZARD_STYLE "Modern")
+set(CPACK_IFW_PACKAGE_WIZARD_DEFAULT_WIDTH 600)
+set(CPACK_IFW_PACKAGE_WIZARD_DEFAULT_HEIGHT 450)
+
+# Компоненты установки
+set(CPACK_IFW_COMPONENT_RUNTIME_DISPLAY_NAME "Satisfactory Calculator Pro")
+set(CPACK_IFW_COMPONENT_RUNTIME_DESCRIPTION "Main application and required libraries")
+set(CPACK_IFW_COMPONENT_RUNTIME_REQUIRED TRUE)
+
+# Создание ярлыков
+set(CPACK_IFW_SHORTCUTS_ENABLED TRUE)
+set(CPACK_IFW_PACKAGE_START_MENU_DIRECTORY "Satisfactory Calculator Pro")
+
+# Настройка скрипта развертывания Qt для Windows
+if(WIN32)
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/deploy-qt-windows.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/deploy-qt-windows.cmake"
+        @ONLY
+    )
+    set(CPACK_PRE_BUILD_SCRIPTS "${CMAKE_CURRENT_BINARY_DIR}/deploy-qt-windows.cmake")
+endif()
+
+# Подключаем CPack
+include(CPack)
+include(CPackIFW) 
