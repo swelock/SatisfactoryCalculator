@@ -201,6 +201,6 @@ mingw32-make
 - [Satisfactory Wiki](https://satisfactory.fandom.com/)
 - [Qt Documentation](https://doc.qt.io/)
 - [C++ Reference](https://cppreference.com/)
-- [Наш Wiki](https://github.com/swelock/SatisfactoryCalculator.wiki.git)
+- [Наш Wiki](https://github.com/swelock/SatisfactoryCalculator/wiki/Welcome-to-the-SatisfactoryCalculator-wiki!)
 
 *Создано с ❤️ для сообщества Satisfactory* 
