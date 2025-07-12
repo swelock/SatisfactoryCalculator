@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+    <Name>Satisfactory Calculator Pro</Name>
+    <Version>1.0.0</Version>
+    <Title>Satisfactory Calculator Pro Installer</Title>
+    <Publisher>SatisCalc Team</Publisher>
+    <ProductUrl>https://github.com/satiscalc/calculator</ProductUrl>
+    <Logo>calculator.png</Logo>
+    <WizardStyle>Modern</WizardStyle>
+    <WizardDefaultWidth>640</WizardDefaultWidth>
+    <WizardDefaultHeight>480</WizardDefaultHeight>
+    <TitleColor>#333333</TitleColor>
+    <RunProgram>@TargetDir@/SatisCalculator.exe</RunProgram>
+    <RunProgramDescription>Запустить Satisfactory Calculator Pro</RunProgramDescription>
+    <StartMenuDir>Satisfactory Calculator Pro</StartMenuDir>
+    <TargetDir>@ApplicationsDir@/SatisfactoryCalculatorPro</TargetDir>
+    <AdminTargetDir>@ApplicationsDirX86@/SatisfactoryCalculatorPro</AdminTargetDir>
+    <RemoteRepositories>
+        <Repository>
+            <Url></Url>
+        </Repository>
+    </RemoteRepositories>
+    <SupportsModify>true</SupportsModify>
+    <AllowNonAsciiCharacters>true</AllowNonAsciiCharacters>
+    <AllowSpaceInPath>true</AllowSpaceInPath>
+    <ControlScript>controlscript.qs</ControlScript>
+</Installer> 
