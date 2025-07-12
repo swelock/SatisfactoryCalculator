@@ -5,7 +5,7 @@
 ## 📦 Скачать
 
 ### Установщик
-**📁 Файл:** `SatisfactoryCalculatorPro-Setup.exe` или с нашего сайта ([https://swelock.github.io/SatisCalculatorSite/])
+**📁 Файл:** `SatisfactoryCalculatorPro-Setup.exe` или с нашего [сайта](https://swelock.github.io/SatisCalculatorSite/)
 **📊 Размер:** ~50 MB (+ папка portable)  
 **💾 Что включено:** Полный установщик с автоматическим созданием ярлыков
 
