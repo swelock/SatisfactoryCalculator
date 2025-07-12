@@ -7,6 +7,8 @@
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-1.0-brightgreen.svg)](CHANGELOG.md)
 
+## Установщик приложения вы можете скачать с нашего сайта и использовать его без необходимости компиляции
+
 ## ✨ Новый дизайн
 
 Приложение полностью переработано с современным дизайном:
